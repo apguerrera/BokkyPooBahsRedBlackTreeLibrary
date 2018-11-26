@@ -46,58 +46,93 @@ library BokkyPooBahsRedBlackTreeLibrary {
         uint removed;
     }
 
-
+    // AG Ok - Sentinel can be set to non null if 0 is a required key  
     uint private constant SENTINEL = 0;
-
+    // AG Ok
     event Log(string where, string action, uint key, uint parent, uint left, uint right, bool red);
-
+    // AG Ok
     function init(Tree storage self) internal {
+        // AG Ok
         require(!self.initialised);
+        // AG Ok  
         self.root = SENTINEL;
+        // AG Ok - Setting nodes[0] to an empty root
         self.nodes[SENTINEL] = Node(SENTINEL, SENTINEL, SENTINEL, false);
+        // AG Ok
         self.initialised = true;
     }
+    // AG Ok - T: check inserting into the tree to get a false count  
     function count(Tree storage self) internal view returns (uint _count) {
+        // AG Ok
         return self.inserted >= self.removed ? self.inserted - self.removed: 0;
     }
+    // AG Ok - T: various inserts but add a first and last check which should pass
     function first(Tree storage self) internal view returns (uint _key) {
+        // AG Ok
         _key = self.root;
+        // AG Ok
         while (_key != SENTINEL && self.nodes[_key].left != SENTINEL) {
+            // AG Ok
             _key = self.nodes[_key].left;
         }
     }
+    // AG Ok - Symmetrical to first()
     function last(Tree storage self) internal view returns (uint _key) {
+        // AG Ok
         _key = self.root;
+        // AG Ok - T: Can nodes be inserted with non null .right?
         while (_key != SENTINEL && self.nodes[_key].right != SENTINEL) {
+            // AG Ok
             _key = self.nodes[_key].right;
         }
     }
+    // AG Ok
     function next(Tree storage self, uint x) internal view returns (uint y) {
+        // AG Ok
         require(x != SENTINEL);
+        // AG Ok - Next node
         if (self.nodes[x].right != SENTINEL) {
+            // AG - To Check min
             y = treeMinimum(self, self.nodes[x].right);
+        // AG Ok
         } else {
+            // AG OK - Up the tree
             y = self.nodes[x].parent;
+            // AG OK - Progress up the tree until it diverges to the next node
             while (y != SENTINEL && x == self.nodes[y].right) {
+                // AG Ok
                 x = y;
+                // AG Ok
                 y = self.nodes[y].parent;
             }
         }
+        // AG Ok - Does it need to be explicit?
         return y;
     }
+    // AG Ok - Symmetrical to next()
     function prev(Tree storage self, uint x) internal view returns (uint y) {
+        // AG Ok
         require(x != SENTINEL);
+        // AG Ok
         if (self.nodes[x].left != SENTINEL) {
+            // AG Ok
             y = treeMaximum(self, self.nodes[x].left);
+        // AG Ok
         } else {
+            // AG Ok
             y = self.nodes[x].parent;
+            // AG Ok
             while (y != SENTINEL && x == self.nodes[y].left) {
+                // AG Ok
                 x = y;
+                // AG Ok
                 y = self.nodes[y].parent;
             }
         }
+        // AG Ok
         return y;
     }
+
     function exists(Tree storage self, uint key) internal view returns (bool _exists) {
         require(key != SENTINEL);
         uint _key = self.root;
