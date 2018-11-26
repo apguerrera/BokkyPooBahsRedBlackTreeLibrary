@@ -132,18 +132,28 @@ library BokkyPooBahsRedBlackTreeLibrary {
         // AG Ok
         return y;
     }
-
+    // AG Ok - Search for key in tree, return bool
     function exists(Tree storage self, uint key) internal view returns (bool _exists) {
+        // AG Ok
         require(key != SENTINEL);
+        // AG Ok
         uint _key = self.root;
+        // AG Ok - T: If adding the if into the while condition helps
         while (_key != SENTINEL) {
+            // AG Ok
             if (key == _key) {
+                // AG Ok
                 _exists = true;
+                // AG Ok
                 return;
             }
+            // AG Ok
             if (key < _key) {
+                // AG Ok
                 _key = self.nodes[_key].left;
+            // AG Ok
             } else {
+                // AG Ok
                 _key = self.nodes[_key].right;
             }
         }
