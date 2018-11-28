@@ -158,32 +158,54 @@ library BokkyPooBahsRedBlackTreeLibrary {
             }
         }
     }
+    // AG Ok
     function getNode(Tree storage self, uint key) internal view returns (uint _returnKey, uint _parent, uint _left, uint _right, bool _red) {
+        // AG Ok
         require(key != SENTINEL);
+        // AG Ok
         uint _key = self.root;
+        // AG Ok
         while (_key != SENTINEL) {
+            // AG Ok
             if (key == _key) {
+                // AG Ok - T: Check memory 
                 Node memory node = self.nodes[key];
+                // AG Ok
                 return (key, node.parent, node.left, node.right, node.red);
             }
+            // AG Ok
             if (key < _key) {
+                // AG Ok
                 _key = self.nodes[_key].left;
+            // AG Ok
             } else {
+                // AG Ok
                 _key = self.nodes[_key].right;
             }
         }
+        // AG Ok - Return empty node
         return (SENTINEL, SENTINEL, SENTINEL, SENTINEL, false);
     }
+    // AG Ok
     function parent(Tree storage self, uint key) internal view returns (uint _parent) {
+        // AG Ok
         require(key != SENTINEL);
+        // AG Ok
         _parent = self.nodes[key].parent;
     }
+    // AG Ok
     function grandparent(Tree storage self, uint key) internal view returns (uint _grandparent) {
+        // AG Ok
         require(key != SENTINEL);
+        // AG Ok
         uint _parent = self.nodes[key].parent;
+        // AG Ok
         if (_parent != SENTINEL) {
+            // AG Ok
             _grandparent = self.nodes[_parent].parent;
+        // AG Ok
         } else {
+            // AG Ok
             _grandparent = SENTINEL;
         }
     }
