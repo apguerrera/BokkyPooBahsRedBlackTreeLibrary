@@ -166,9 +166,9 @@ library BokkyPooBahsRedBlackTreeLibrary {
         uint _key = self.root;
         // AG Ok
         while (_key != SENTINEL) {
-            // AG Ok
+            // AG Ok - Might want to put the if equals statement sequential and last to save gas
             if (key == _key) {
-                // AG Ok - T: Check memory 
+                // AG Ok - T: Check memory
                 Node memory node = self.nodes[key];
                 // AG Ok
                 return (key, node.parent, node.left, node.right, node.red);
@@ -209,26 +209,44 @@ library BokkyPooBahsRedBlackTreeLibrary {
             _grandparent = SENTINEL;
         }
     }
+    // AG Ok
     function sibling(Tree storage self, uint key) internal view returns (uint _sibling) {
+        // AG Ok
         require(key != SENTINEL);
+        // AG Ok
         uint _parent = self.nodes[key].parent;
+        // AG Ok
         if (_parent != SENTINEL) {
+            // AG Ok
             if (key == self.nodes[_parent].left) {
+                // AG Ok
                 _sibling = self.nodes[_parent].right;
+            // AG Ok
             } else {
+                // AG Ok
                 _sibling = self.nodes[_parent].left;
             }
+        // AG Ok
         } else {
+            // AG Ok
             _sibling = SENTINEL;
         }
     }
+    // AG Ok
     function uncle(Tree storage self, uint key) internal view returns (uint _uncle) {
+        // AG Ok
         require(key != SENTINEL);
+        // AG Ok
         uint _grandParent = grandparent(self, key);
+        // AG Ok
         if (_grandParent != SENTINEL) {
+            // AG Ok
             uint _parent = self.nodes[key].parent;
+            // AG Ok
             _uncle = sibling(self, _parent);
+        // AG Ok
         } else {
+            // AG Ok
             _uncle = SENTINEL;
         }
     }
@@ -317,17 +335,24 @@ library BokkyPooBahsRedBlackTreeLibrary {
         delete self.nodes[y];
         self.removed++;
     }
-
+    // AG Ok - T: What if you put a key on the right of the tree root?
     function treeMinimum(Tree storage self, uint key) private view returns (uint) {
+        // AG Ok
         while (self.nodes[key].left != SENTINEL) {
+            // AG Ok
             key = self.nodes[key].left;
         }
+        // AG Ok
         return key;
     }
+    // AG Ok
     function treeMaximum(Tree storage self, uint key) private view returns (uint) {
+        // AG Ok
         while (self.nodes[key].right != SENTINEL) {
+            // AG Ok
             key = self.nodes[key].right;
         }
+        // AG Ok 
         return key;
     }
 
