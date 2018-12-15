@@ -47,6 +47,7 @@ library BokkyPooBahsRedBlackTreeLibrary {
     }
 
     // AG Ok - Sentinel can be set to non null if 0 is a required key  
+    // AG T: Set sentinel to various numbers
     uint private constant SENTINEL = 0;
     // AG Ok
     event Log(string where, string action, uint key, uint parent, uint left, uint right, bool red);
