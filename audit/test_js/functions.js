@@ -128,7 +128,7 @@ function printTxData(name, txId) {
   var block = eth.getBlock(txReceipt.blockNumber);
   console.log("RESULT: " + name + " status=" + txReceipt.status + (txReceipt.status == 0 ? " Failure" : " Success") + " gas=" + tx.gas +
     " gasUsed=" + txReceipt.gasUsed + " costETH=" + gasCostETH + " costUSD=" + gasCostUSD +
-    " @ ETH/USD=" + ethPriceUSD + " gasPrice=" + web3.fromWei(gasPrice, "gwei") + " gwei block=" + 
+    " @ ETH/USD=" + ethPriceUSD + " gasPrice=" + web3.fromWei(gasPrice, "gwei") + " gwei block=" +
     txReceipt.blockNumber + " txIx=" + tx.transactionIndex + " txId=" + txId +
     " @ " + block.timestamp + " " + new Date(block.timestamp * 1000).toUTCString());
 }
