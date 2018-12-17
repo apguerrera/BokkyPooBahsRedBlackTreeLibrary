@@ -11,7 +11,7 @@ w3 = Web3(Web3.IPCProvider("./testchain/geth.ipc"))
 w3.middleware_stack.inject(geth_poa_middleware, layer=0)
 
 # variables
-ethPriceUSD = 85.71   # 120
+ethPriceUSD = 85.71   # USD
 defaultGasPrice = w3.toWei(16, "gwei");
 accounts = []
 accountNames = {}
@@ -83,7 +83,7 @@ def printBalances():
     while (i < len(accounts)):
         etherBalanceBaseBlock = w3.eth.getBalance(accounts[i], baseBlock)
         etherBalanceBaseBlock = w3.eth.getBalance(accounts[i], baseBlock)
-        etherBalance = w3.fromWei(w3.eth.getBalance(accounts[i]) - etherBalanceBaseBlock, "ether")
+        etherBalance = w3.fromWei((w3.eth.getBalance(accounts[i]) - etherBalanceBaseBlock), "ether")
         if token == "":
             tokenBalance = 0
         else:
@@ -122,6 +122,88 @@ def waitOneBlock(oldCurrentBlock):
     print("RESULT: Waited one block")
     print("RESULT: ")
     return w3.eth.blockNumber
+
+def assertCondition(condition, message):
+    if (condition):
+        print("RESULT: PASS " + message)
+    else:
+        print("RESULT: FAIL " + message)
+    return condition
+
+def assertIntEquals(result, expected, message):
+    if (int(result) == int(expected)):
+        print("RESULT: PASS " + message)
+        return True
+    else:
+        print("RESULT: FAIL " + message)
+        return False
+
+def assertEtherBalance(account, expectedBalance):
+    etherBalance = w3.fromWei(w3.eth.getBalance(account), "ether")
+    if (etherBalance == expectedBalance):
+        print("RESULT: OK " + str(account) + " has expected balance " + str(expectedBalance))
+    else:
+        print("RESULT: FAILURE " + str(account) + " has balance " + str(etherBalance) + " <> expected " + str(expectedBalance))
+
+def failIfTxStatusError(tx, msg):
+    status = w3.eth.getTransactionReceipt(tx).status
+    if (status == 0):
+        print("RESULT: FAIL " + str(msg))
+        return 0
+    else:
+        print("RESULT: PASS " + str(msg))
+        return 1
+
+def passIfTxStatusError(tx, msg):
+    status = w3.eth.getTransactionReceipt(tx).status
+    if (status == 1):
+        print("RESULT: FAIL " + str(msg))
+        return 0
+    else:
+        print("RESULT: PASS " + str(msg))
+        return 1
+
+
+def gasEqualsGasUsed(tx):
+    gas = w3.eth.getTransaction(tx).gas;
+    gasUsed = w3.eth.getTransactionReceipt(tx).gasUsed;
+    return (gas == gasUsed);
+
+
+def failIfGasEqualsGasUsed(tx, msg):
+    gas = w3.eth.getTransaction(tx).gas
+    gasUsed = w3.eth.getTransactionReceipt(tx).gasUsed
+    if (gas == gasUsed):
+        print("RESULT: FAIL " + str(msg))
+        return 0
+    else:
+        print("RESULT: PASS " + str(msg))
+        return 1
+
+
+def passIfGasEqualsGasUsed(tx, msg):
+  gas = w3.eth.getTransaction(tx).gas
+  gasUsed = w3.eth.getTransactionReceipt(tx).gasUsed
+  if (gas == gasUsed):
+    print("RESULT: PASS " + str(msg))
+    return 1
+  else:
+    print("RESULT: FAIL " +str(msg))
+    return 0
+
+def failIfGasEqualsGasUsedOrContractAddressNull(contractAddress, tx, msg):
+    if (contractAddress == null):
+        print("RESULT: FAIL " + str(msg))
+        return 0
+    else:
+        gas = eth.getTransaction(tx).gas
+        gasUsed = eth.getTransactionReceipt(tx).gasUsed
+        if (gas == gasUsed):
+            print("RESULT: FAIL " + str(msg))
+            return 0
+        else:
+            print("RESULT: PASS " + str(msg))
+            return 1
 
 
 addAccount(minerAccount, "Account #0 - Miner")
