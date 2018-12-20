@@ -36,14 +36,14 @@ tokenContractAbi = ""
 # define
 def sign_transaction(txn):
     # Flesh out the transaction for local signing
-    next_nonce = w3.eth.getTransactionCount(acct.address)
+    next_nonce = w3.eth.getTransactionCount(str(w3.eth.accounts[1])
     signable_transaction = dict(
       txn,
       nonce=next_nonce,
       gasPrice=w3.toWei(4, 'gwei'),
     )
     # Sign transaction
-    signature_info = acct.signTransaction(signable_transaction)
+    signature_info = w3.eth.account.signTransaction(signable_transaction)
     # Broadcast transaction
     txn_hash = w3.eth.sendRawTransaction(signature_info.rawTransaction)
     # Wait for the transaction to be mined
