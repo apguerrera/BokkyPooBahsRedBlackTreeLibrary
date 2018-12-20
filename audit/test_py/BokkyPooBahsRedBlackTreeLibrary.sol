@@ -1,13 +1,3 @@
-# AddressStatus
-
-Source file [../../chain/contracts/AddressStatus.sol](../../chain/contracts/AddressStatus.sol).
-
-<br />
-
-<hr />
-
-```javascript
-// AG Ok
 pragma solidity ^0.4.25;
 
 // ----------------------------------------------------------------------------
@@ -23,231 +13,137 @@ pragma solidity ^0.4.25;
 //
 // Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2018. The MIT Licence.
 // ----------------------------------------------------------------------------
-
-// AG Ok
 library BokkyPooBahsRedBlackTreeLibrary {
-    // AG Ok
     struct Node {
-        // AG - Next 4 Ok
         uint parent;
         uint left;
         uint right;
         bool red;
     }
-    // AG Ok
+
     struct Tree {
-        // AG Ok
         uint root;
-        // AG Ok
         mapping(uint => Node) nodes;
-        // AG - Next 3 Ok
         bool initialised;
         uint inserted;
         uint removed;
     }
 
-    // AG Ok - Sentinel can be set to non null if 0 is a required key  
-    // AG T: Set sentinel to various numbers
     uint private constant SENTINEL = 0;
-    // AG Ok
+
     event Log(string where, string action, uint key, uint parent, uint left, uint right, bool red);
-    // AG Ok
+
     function init(Tree storage self) internal {
-        // AG Ok
         require(!self.initialised);
-        // AG Ok  
         self.root = SENTINEL;
-        // AG Ok - Setting nodes[0] to an empty root
         self.nodes[SENTINEL] = Node(SENTINEL, SENTINEL, SENTINEL, false);
-        // AG Ok
         self.initialised = true;
     }
-    // AG Ok - T: check inserting into the tree to get a false count  
     function count(Tree storage self) internal view returns (uint _count) {
-        // AG Ok
         return self.inserted >= self.removed ? self.inserted - self.removed: 0;
     }
-    // AG Ok - T: various inserts but add a first and last check which should pass
     function first(Tree storage self) internal view returns (uint _key) {
-        // AG Ok
         _key = self.root;
-        // AG Ok
         while (_key != SENTINEL && self.nodes[_key].left != SENTINEL) {
-            // AG Ok
             _key = self.nodes[_key].left;
         }
     }
-    // AG Ok - Symmetrical to first()
     function last(Tree storage self) internal view returns (uint _key) {
-        // AG Ok
         _key = self.root;
-        // AG Ok - T: Can nodes be inserted with non null .right?
         while (_key != SENTINEL && self.nodes[_key].right != SENTINEL) {
-            // AG Ok
             _key = self.nodes[_key].right;
         }
     }
-    // AG Ok
     function next(Tree storage self, uint x) internal view returns (uint y) {
-        // AG Ok
         require(x != SENTINEL);
-        // AG Ok - Next node
         if (self.nodes[x].right != SENTINEL) {
-            // AG - To Check min
             y = treeMinimum(self, self.nodes[x].right);
-        // AG Ok
         } else {
-            // AG OK - Up the tree
             y = self.nodes[x].parent;
-            // AG OK - Progress up the tree until it diverges to the next node
             while (y != SENTINEL && x == self.nodes[y].right) {
-                // AG Ok
                 x = y;
-                // AG Ok
                 y = self.nodes[y].parent;
             }
         }
-        // AG Ok - Does it need to be explicit?
         return y;
     }
-    // AG Ok - Symmetrical to next()
     function prev(Tree storage self, uint x) internal view returns (uint y) {
-        // AG Ok
         require(x != SENTINEL);
-        // AG Ok
         if (self.nodes[x].left != SENTINEL) {
-            // AG Ok
             y = treeMaximum(self, self.nodes[x].left);
-        // AG Ok
         } else {
-            // AG Ok
             y = self.nodes[x].parent;
-            // AG Ok
             while (y != SENTINEL && x == self.nodes[y].left) {
-                // AG Ok
                 x = y;
-                // AG Ok
                 y = self.nodes[y].parent;
             }
         }
-        // AG Ok
         return y;
     }
-    // AG Ok - Search for key in tree, return bool
     function exists(Tree storage self, uint key) internal view returns (bool _exists) {
-        // AG Ok
         require(key != SENTINEL);
-        // AG Ok
         uint _key = self.root;
-        // AG Ok - T: If adding the if into the while condition helps
         while (_key != SENTINEL) {
-            // AG Ok
             if (key == _key) {
-                // AG Ok
                 _exists = true;
-                // AG Ok
                 return;
             }
-            // AG Ok
             if (key < _key) {
-                // AG Ok
                 _key = self.nodes[_key].left;
-            // AG Ok
             } else {
-                // AG Ok
                 _key = self.nodes[_key].right;
             }
         }
     }
-    // AG Ok
     function getNode(Tree storage self, uint key) internal view returns (uint _returnKey, uint _parent, uint _left, uint _right, bool _red) {
-        // AG Ok
         require(key != SENTINEL);
-        // AG Ok
         uint _key = self.root;
-        // AG Ok
         while (_key != SENTINEL) {
-            // AG Ok - Might want to put the if equals statement sequential and last to save gas
             if (key == _key) {
-                // AG Ok - T: Check memory
                 Node memory node = self.nodes[key];
-                // AG Ok
                 return (key, node.parent, node.left, node.right, node.red);
             }
-            // AG Ok
             if (key < _key) {
-                // AG Ok
                 _key = self.nodes[_key].left;
-            // AG Ok
             } else {
-                // AG Ok
                 _key = self.nodes[_key].right;
             }
         }
-        // AG Ok - Return empty node
         return (SENTINEL, SENTINEL, SENTINEL, SENTINEL, false);
     }
-    // AG Ok
     function parent(Tree storage self, uint key) internal view returns (uint _parent) {
-        // AG Ok
         require(key != SENTINEL);
-        // AG Ok
         _parent = self.nodes[key].parent;
     }
-    // AG Ok
     function grandparent(Tree storage self, uint key) internal view returns (uint _grandparent) {
-        // AG Ok
         require(key != SENTINEL);
-        // AG Ok
         uint _parent = self.nodes[key].parent;
-        // AG Ok
         if (_parent != SENTINEL) {
-            // AG Ok
             _grandparent = self.nodes[_parent].parent;
-        // AG Ok
         } else {
-            // AG Ok
             _grandparent = SENTINEL;
         }
     }
-    // AG Ok
     function sibling(Tree storage self, uint key) internal view returns (uint _sibling) {
-        // AG Ok
         require(key != SENTINEL);
-        // AG Ok
         uint _parent = self.nodes[key].parent;
-        // AG Ok
         if (_parent != SENTINEL) {
-            // AG Ok
             if (key == self.nodes[_parent].left) {
-                // AG Ok
                 _sibling = self.nodes[_parent].right;
-            // AG Ok
             } else {
-                // AG Ok
                 _sibling = self.nodes[_parent].left;
             }
-        // AG Ok
         } else {
-            // AG Ok
             _sibling = SENTINEL;
         }
     }
-    // AG Ok
     function uncle(Tree storage self, uint key) internal view returns (uint _uncle) {
-        // AG Ok
         require(key != SENTINEL);
-        // AG Ok
         uint _grandParent = grandparent(self, key);
-        // AG Ok
         if (_grandParent != SENTINEL) {
-            // AG Ok
             uint _parent = self.nodes[key].parent;
-            // AG Ok
             _uncle = sibling(self, _parent);
-        // AG Ok
         } else {
-            // AG Ok
             _uncle = SENTINEL;
         }
     }
@@ -336,24 +232,17 @@ library BokkyPooBahsRedBlackTreeLibrary {
         delete self.nodes[y];
         self.removed++;
     }
-    // AG Ok - T: What if you put a key on the right of the tree root?
+
     function treeMinimum(Tree storage self, uint key) private view returns (uint) {
-        // AG Ok
         while (self.nodes[key].left != SENTINEL) {
-            // AG Ok
             key = self.nodes[key].left;
         }
-        // AG Ok
         return key;
     }
-    // AG Ok
     function treeMaximum(Tree storage self, uint key) private view returns (uint) {
-        // AG Ok
         while (self.nodes[key].right != SENTINEL) {
-            // AG Ok
             key = self.nodes[key].right;
         }
-        // AG Ok 
         return key;
     }
 
@@ -513,5 +402,3 @@ library BokkyPooBahsRedBlackTreeLibrary {
 // ----------------------------------------------------------------------------
 // End - BokkyPooBah's Red-Black Tree Library
 // ----------------------------------------------------------------------------
-
-```
