@@ -18,3 +18,4 @@ test/testchain/geth
 test/testchain/geth.ipc
 test/testchain/history
 private
+*.pyc

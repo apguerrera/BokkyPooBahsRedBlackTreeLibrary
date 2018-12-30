@@ -33,24 +33,25 @@ baseBlock = w3.eth.blockNumber
 tokenContractAddress = ""
 tokenContractAbi = ""
 
-# define
 def sign_transaction(txn):
     # Flesh out the transaction for local signing
-    next_nonce = w3.eth.getTransactionCount(str(w3.eth.accounts[1])
+    next_nonce = w3.eth.getTransactionCount(str(w3.eth.accounts[0]))
     signable_transaction = dict(
       txn,
       nonce=next_nonce,
       gasPrice=w3.toWei(4, 'gwei'),
     )
     # Sign transaction
-    signature_info = w3.eth.account.signTransaction(signable_transaction)
+    encrypted_key = open('testchain/keystore/UTC--2017-05-20T02-37-30.360937280Z--a00af22d07c87d96eeeb0ed583f8f6ac7812827e').read()
+    private_key = w3.eth.account.decrypt(encrypted_key, '')
+    signature_info = w3.eth.account.signTransaction(signable_transaction, private_key)
     # Broadcast transaction
     txn_hash = w3.eth.sendRawTransaction(signature_info.rawTransaction)
     # Wait for the transaction to be mined
     receipt = w3.eth.waitForTransactionReceipt(txn_hash)
 
     return receipt
-
+    
 def addAccount(account, accountName):
     accounts.append(account)
     accountNames[account] = accountName
@@ -165,9 +166,9 @@ def passIfTxStatusError(tx, msg):
 
 
 def gasEqualsGasUsed(tx):
-    gas = w3.eth.getTransaction(tx).gas;
-    gasUsed = w3.eth.getTransactionReceipt(tx).gasUsed;
-    return (gas == gasUsed);
+    gas = w3.eth.getTransaction(tx).gas
+    gasUsed = w3.eth.getTransactionReceipt(tx).gasUsed
+    return (gas == gasUsed)
 
 
 def failIfGasEqualsGasUsed(tx, msg):
@@ -204,6 +205,24 @@ def failIfGasEqualsGasUsedOrContractAddressNull(contractAddress, tx, msg):
         else:
             print("RESULT: PASS " + str(msg))
             return 1
+
+
+def treeAsList(tree):
+    result = []
+    treeAsListWalker(tree, tree.functions.root().call(), result)
+    return result.sort()
+
+def treeAsListWalker(tree, node, result):
+    SENTINEL = 0
+    nodeData = tree.functions.getNode(node).call()
+    leftNode = nodeData[2]
+    rightNode = nodeData[3]
+    if (leftNode != SENTINEL):
+        treeAsListWalker(tree, leftNode, result)
+    if (nodeData[0] != SENTINEL):
+        result.append(parseInt(nodeData[0]))
+    if (rightNode != SENTINEL):
+        treeAsListWalker(tree, rightNode, result)
 
 
 addAccount(minerAccount, "Account #0 - Miner")
