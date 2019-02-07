@@ -25,7 +25,7 @@ def test_deploy(w3, account, path, name):
 
 
 def test_empty(account, contract):
-    print('make sure contract is initialized correctly: ', end='')
+    print('check that contract is initialized correctly: ', end='')
 
     root = call_function(account, contract, 'root')
     expected = 0
@@ -75,7 +75,7 @@ def test_empty(account, contract):
 
 
 def test_trees_equal(w3, account, contract, rbt):
-    print('check that contract RBT has the same structure and values: ', end='')
+    print('check that contract RBT has correct structure and values: ', end='')
 
     local_list = tree_to_list(rbt)
     contract_list = contract_tree_to_list(account, contract)
@@ -144,6 +144,22 @@ def test_remove(w3, account, contract, items):
         print('SUCCESS: gas used: {}'.format(total_gas_used))
 
 
+def test_duplicate(w3, account, contract, items):
+    print('check that contract rejects duplicate values: {}: '.format(items), end='')
+
+    tx_hashes = []
+    for item in items:
+        add_nonce = int(w3.txpool.status.pending, 16)
+        tx_hash = transact_function(w3, account, contract, 'insert', item, add_nonce)
+        tx_hashes.append(tx_hash)
+
+    for i in range(len(tx_hashes)):
+        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hashes[i])
+        assert tx_receipt['status'] == 0, 'succeeded to insert duplicate element {} to RBT'.format(items[i])
+
+    print('SUCCESS')
+
+
 def test(w3, contract_path, contract_name, account, insert_items, remove_items):
     test_w3_connected(w3)
 
@@ -157,7 +173,10 @@ def test(w3, contract_path, contract_name, account, insert_items, remove_items):
     for item in insert_items:
         test_insert(w3, account, contract, [item])
         rbt.add(item)
+        test_trees_equal(w3, account, contract, rbt)
 
+        # try to insert duplicate value, check that nothing is changed
+        test_duplicate(w3, account, contract, [item])
         test_trees_equal(w3, account, contract, rbt)
 
     # remove items one by one, after each removal check that contract has correct structure and elements
@@ -171,6 +190,10 @@ def test(w3, contract_path, contract_name, account, insert_items, remove_items):
     test_insert(w3, account, contract, insert_items)
     for item in insert_items:
         rbt.add(item)
+    test_trees_equal(w3, account, contract, rbt)
+
+    # try to insert duplicate values, check that nothing is changed
+    test_duplicate(w3, account, contract, insert_items)
     test_trees_equal(w3, account, contract, rbt)
 
     # remove all items, then check that contract has correct structure and elements
@@ -184,47 +207,13 @@ def test(w3, contract_path, contract_name, account, insert_items, remove_items):
 
 def test_randomized(w3, contract_path, contract_name, account, n=None):
     if n is None:
-        n = random.randint(1, 100)
+        n = random.randint(1, 20)
     insert_items = random.sample(range(1, random.randint(n+1, 2000000)), n)
 
     remove_items = list(insert_items)
     random.shuffle(remove_items)
 
-    test_w3_connected(w3)
-
-    contract = test_deploy(w3, account, contract_path, contract_name)
-    test_empty(account, contract)
-
-    rbt = rb_tree.RedBlackTree()
-    test_trees_equal(w3, account, contract, rbt)
-
-    # insert items one by one, after each insertion check that contract has correct structure and elements
-    for item in insert_items:
-        test_insert(w3, account, contract, [item])
-        rbt.add(item)
-
-        test_trees_equal(w3, account, contract, rbt)
-
-    # remove items one by one, after each removal check that contract has correct structure and elements
-    for item in remove_items:
-        test_remove(w3, account, contract, [item])
-        rbt.remove(item)
-
-        test_trees_equal(w3, account, contract, rbt)
-
-    # insert all items, then check that contract has correct structure and elements
-    test_insert(w3, account, contract, insert_items)
-    for item in insert_items:
-        rbt.add(item)
-    test_trees_equal(w3, account, contract, rbt)
-
-    # remove all items, then check that contract has correct structure and elements
-    test_remove(w3, account, contract, insert_items)
-    for item in insert_items:
-        rbt.remove(item)
-    test_trees_equal(w3, account, contract, rbt)
-
-    print('PASS')
+    test(w3, contract_path, contract_name, account, insert_items, remove_items)
 
 
 if __name__ == '__main__':
@@ -242,5 +231,5 @@ if __name__ == '__main__':
     items_to_remove = [4, 14, 25, 32, 2, 30, 16, 31, 6, 26, 18, 22, 28, 23, 12, 15, 19, 27, 7, 13, 29, 11, 3, 5, 17, 1,
                        24, 20, 9, 8, 21, 10]
 
-    # test(web3, rbt_contract_path, rbt_contract_name, actor, items_to_insert, items_to_remove)
-    test_randomized(web3, rbt_contract_path, rbt_contract_name, actor, 10)
+    test(web3, rbt_contract_path, rbt_contract_name, actor, items_to_insert, items_to_remove)
+    test_randomized(web3, rbt_contract_path, rbt_contract_name, actor, 5)
