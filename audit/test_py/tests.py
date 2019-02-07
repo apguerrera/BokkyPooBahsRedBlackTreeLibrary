@@ -1,7 +1,7 @@
 import audit.test_py.rb_tree as rb_tree
 from audit.test_py.util import *
 from web3 import Web3
-from os.path import abspath
+import random
 
 
 def test_w3_connected(w3):
@@ -9,13 +9,13 @@ def test_w3_connected(w3):
 
     assert w3.isConnected(), 'not connected to ethereum node'
 
-    print('SUCCESS: ipc path: {}'.format(abspath(ipc_path)))
+    print('SUCCESS: ipc path: {}'.format(w3.providers[0].ipc_path))
 
 
-def test_deploy(w3, account):
+def test_deploy(w3, account, path, name):
     print('deploy contract: ', end='')
 
-    tx_hash, contract_interface = deploy_contract(w3, account, contract_path, contract_name)
+    tx_hash, contract_interface = deploy_contract(w3, account, path, name)
     contract_address = wait_contract_address(w3, tx_hash)
     contract = get_contract(w3, contract_address, contract_interface['abi'])
     assert w3.isAddress(contract_address), 'failed to deploy contract'
@@ -75,7 +75,7 @@ def test_empty(account, contract):
 
 
 def test_trees_equal(w3, account, contract, rbt):
-    print('check that both RBTs have the same structure and values: ', end='')
+    print('check that contract RBT has the same structure and values: ', end='')
 
     local_list = tree_to_list(rbt)
     contract_list = contract_tree_to_list(account, contract)
@@ -90,27 +90,157 @@ def test_trees_equal(w3, account, contract, rbt):
     print('SUCCESS')
 
 
-if __name__ == '__main__':
-    ipc_path = 'testchain/geth.ipc'
-    keystore_file = 'testchain/keystore/UTC--2017-05-20T02-37-30.360937280Z--a00af22d07c87d96eeeb0ed583f8f6ac7812827e'
+def test_insert(w3, account, contract, items):
+    print('insert elements: {}: '.format(items), end='')
 
-    contract_path = 'TestBokkyPooBahsRedBlackTreeRaw.sol'
-    contract_name = 'TestBokkyPooBahsRedBlackTreeRaw'
+    tx_hashes = []
+    for item in items:
+        add_nonce = int(w3.txpool.status.pending, 16)
+        tx_hash = transact_function(w3, account, contract, 'insert', item, add_nonce)
+        tx_hashes.append(tx_hash)
 
-    w3_instance = Web3(Web3.IPCProvider(ipc_path))
-    actor = account_from_key(w3_instance, keystore_file, '')
+    min_gas_used = 100000000000
+    max_gas_used = -10000000000
+    total_gas_used = 0
+    for i in range(len(tx_hashes)):
+        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hashes[i])
+        gas_used = tx_receipt['gasUsed']
+        min_gas_used = min(gas_used, min_gas_used)
+        max_gas_used = max(gas_used, max_gas_used)
+        total_gas_used += gas_used
+        assert tx_receipt['status'] == 1, 'failed to insert element {} to RBT'.format(items[i])
 
-    insert_items = [18, 28, 17, 32, 7, 5, 21, 14, 10, 3, 23, 16, 24, 4, 29, 8, 26, 12, 2, 22, 11, 1, 31, 19, 30, 9, 13,
-                    15, 6, 20, 25, 27]
-    remove_items = [4, 14, 25, 32, 2, 30, 16, 31, 6, 26, 18, 22, 28, 23, 12, 15, 19, 27, 7, 13, 29, 11, 3, 5, 17, 1, 24,
-                    20, 9, 8, 21, 10]
+    if len(items) > 1:
+        print('SUCCESS: minimum gas: {}, maximum gas: {}, total gas: {}, average gas: {}'
+              .format(min_gas_used, max_gas_used, total_gas_used, int(total_gas_used / len(tx_hashes))))
+    else:
+        print('SUCCESS: gas used: {}'.format(total_gas_used))
 
-    test_w3_connected(w3_instance)
 
-    rbt_contract = test_deploy(w3_instance, actor)
-    test_empty(actor, rbt_contract)
+def test_remove(w3, account, contract, items):
+    print('remove elements: {}: '.format(items), end='')
 
-    rbt_local = rb_tree.RedBlackTree()
-    test_trees_equal(w3_instance, actor, rbt_contract, rbt_local)
+    tx_hashes = []
+    for item in items:
+        add_nonce = int(w3.txpool.status.pending, 16)
+        tx_hash = transact_function(w3, account, contract, 'remove', item, add_nonce)
+        tx_hashes.append(tx_hash)
+
+    min_gas_used = 100000000000
+    max_gas_used = -10000000000
+    total_gas_used = 0
+    for i in range(len(tx_hashes)):
+        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hashes[i])
+        gas_used = tx_receipt['gasUsed']
+        min_gas_used = min(gas_used, min_gas_used)
+        max_gas_used = max(gas_used, max_gas_used)
+        total_gas_used += gas_used
+        assert tx_receipt['status'] == 1, 'failed to remove element {} to RBT'.format(items[i])
+
+    if len(items) > 1:
+        print('SUCCESS: minimum gas: {}, maximum gas: {}, total gas: {}, average gas: {}'
+              .format(min_gas_used, max_gas_used, total_gas_used, int(total_gas_used / len(tx_hashes))))
+    else:
+        print('SUCCESS: gas used: {}'.format(total_gas_used))
+
+
+def test(w3, contract_path, contract_name, account, insert_items, remove_items):
+    test_w3_connected(w3)
+
+    contract = test_deploy(w3, account, contract_path, contract_name)
+    test_empty(account, contract)
+
+    rbt = rb_tree.RedBlackTree()
+    test_trees_equal(w3, account, contract, rbt)
+
+    # insert items one by one, after each insertion check that contract has correct structure and elements
+    for item in insert_items:
+        test_insert(w3, account, contract, [item])
+        rbt.add(item)
+
+        test_trees_equal(w3, account, contract, rbt)
+
+    # remove items one by one, after each removal check that contract has correct structure and elements
+    for item in remove_items:
+        test_remove(w3, account, contract, [item])
+        rbt.remove(item)
+
+        test_trees_equal(w3, account, contract, rbt)
+
+    # insert all items, then check that contract has correct structure and elements
+    test_insert(w3, account, contract, insert_items)
+    for item in insert_items:
+        rbt.add(item)
+    test_trees_equal(w3, account, contract, rbt)
+
+    # remove all items, then check that contract has correct structure and elements
+    test_remove(w3, account, contract, insert_items)
+    for item in insert_items:
+        rbt.remove(item)
+    test_trees_equal(w3, account, contract, rbt)
 
     print('PASS')
+
+
+def test_randomized(w3, contract_path, contract_name, account, n=None):
+    if n is None:
+        n = random.randint(1, 100)
+    insert_items = random.sample(range(1, random.randint(n+1, 2000000)), n)
+
+    remove_items = list(insert_items)
+    random.shuffle(remove_items)
+
+    test_w3_connected(w3)
+
+    contract = test_deploy(w3, account, contract_path, contract_name)
+    test_empty(account, contract)
+
+    rbt = rb_tree.RedBlackTree()
+    test_trees_equal(w3, account, contract, rbt)
+
+    # insert items one by one, after each insertion check that contract has correct structure and elements
+    for item in insert_items:
+        test_insert(w3, account, contract, [item])
+        rbt.add(item)
+
+        test_trees_equal(w3, account, contract, rbt)
+
+    # remove items one by one, after each removal check that contract has correct structure and elements
+    for item in remove_items:
+        test_remove(w3, account, contract, [item])
+        rbt.remove(item)
+
+        test_trees_equal(w3, account, contract, rbt)
+
+    # insert all items, then check that contract has correct structure and elements
+    test_insert(w3, account, contract, insert_items)
+    for item in insert_items:
+        rbt.add(item)
+    test_trees_equal(w3, account, contract, rbt)
+
+    # remove all items, then check that contract has correct structure and elements
+    test_remove(w3, account, contract, insert_items)
+    for item in insert_items:
+        rbt.remove(item)
+    test_trees_equal(w3, account, contract, rbt)
+
+    print('PASS')
+
+
+if __name__ == '__main__':
+    geth_ipc_path = 'testchain/geth.ipc'
+    keystore_file = 'testchain/keystore/UTC--2017-05-20T02-37-30.360937280Z--a00af22d07c87d96eeeb0ed583f8f6ac7812827e'
+
+    rbt_contract_path = 'TestBokkyPooBahsRedBlackTreeRaw.sol'
+    rbt_contract_name = 'TestBokkyPooBahsRedBlackTreeRaw'
+
+    web3 = Web3(Web3.IPCProvider(geth_ipc_path))
+    actor = account_from_key(web3, keystore_file, '')
+
+    items_to_insert = [18, 28, 17, 32, 7, 5, 21, 14, 10, 3, 23, 16, 24, 4, 29, 8, 26, 12, 2, 22, 11, 1, 31, 19, 30, 9,
+                       13, 15, 6, 20, 25, 27]
+    items_to_remove = [4, 14, 25, 32, 2, 30, 16, 31, 6, 26, 18, 22, 28, 23, 12, 15, 19, 27, 7, 13, 29, 11, 3, 5, 17, 1,
+                       24, 20, 9, 8, 21, 10]
+
+    # test(web3, rbt_contract_path, rbt_contract_name, actor, items_to_insert, items_to_remove)
+    test_randomized(web3, rbt_contract_path, rbt_contract_name, actor, 10)

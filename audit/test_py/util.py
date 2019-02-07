@@ -115,7 +115,7 @@ def get_contract(w3, address, abi):
 
 
 # make transaction to contract invoking function, return transaction hash
-def transact_function(w3, account, contract, function_name, args=None, gas=0, add_nonce=0):
+def transact_function(w3, account, contract, function_name, args=None, add_nonce=0, gas=1000000):
     if args is not None:
         transactor = contract.functions[function_name](args)
     else:
