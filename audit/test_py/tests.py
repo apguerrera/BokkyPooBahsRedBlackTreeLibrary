@@ -24,6 +24,56 @@ def test_deploy(w3, account):
     return contract
 
 
+def test_empty(account, contract):
+    print('make sure contract is initialized correctly: ', end='')
+
+    root = call_function(account, contract, 'root')
+    expected = 0
+    assert root == 0, 'root should be: {}, got: {}'.format(expected, root)
+
+    first = call_function(account, contract, 'first')
+    expected = 0
+    assert first == expected, 'first should be: {}, got: {}'.format(expected, first)
+
+    last = call_function(account, contract, 'last')
+    expected = 0
+    assert last == expected, 'last should be: {}, got: {}'.format(expected, last)
+
+    next_123 = call_function(account, contract, 'next', 123)
+    expected = 0
+    assert next_123 == expected, 'next(123) should be: {}, got: {}'.format(expected, next_123)
+
+    prev_123 = call_function(account, contract, 'prev', 123)
+    expected = 0
+    assert prev_123 == expected, 'prev(123) should be: {}, got: {}'.format(expected, prev_123)
+
+    exists_123 = call_function(account, contract, 'exists', 123)
+    expected = False
+    assert exists_123 == expected, 'exists(123) should be: {}, got: {}'.format(expected, exists_123)
+
+    node_123 = call_function(account, contract, 'getNode', 123)
+    expected = [0, 0, 0, 0, False]
+    assert node_123 == expected, 'getNode(123) should be: {}, got: {}'.format(expected, node_123)
+
+    parent_123 = call_function(account, contract, 'parent', 123)
+    expected = 0
+    assert parent_123 == expected, 'parent(123) should be: {}, got: {}'.format(expected, parent_123)
+
+    grandparent_123 = call_function(account, contract, 'grandparent', 123)
+    expected = 0
+    assert grandparent_123 == expected, 'grandparent(123) should be: {}, got: {}'.format(expected, grandparent_123)
+
+    sibling_123 = call_function(account, contract, 'sibling', 123)
+    expected = 0
+    assert sibling_123 == expected, 'sibling(123) should be: {}, got: {}'.format(expected, sibling_123)
+
+    uncle_123 = call_function(account, contract, 'uncle', 123)
+    expected = 0
+    assert uncle_123 == expected, 'uncle(123) should be: {}, got: {}'.format(expected, uncle_123)
+
+    print('SUCCESS')
+
+
 def test_trees_equal(w3, account, contract, rbt):
     print('check that both RBTs have the same structure and values: ', end='')
 
@@ -37,7 +87,7 @@ def test_trees_equal(w3, account, contract, rbt):
         assert local_list[i] == contract_list[i], \
             'element should be: {}, got: {}'.format(local_list[i], contract_list[i])
 
-    print('SUCCESS: trees have the same structure and elements')
+    print('SUCCESS')
 
 
 if __name__ == '__main__':
@@ -57,8 +107,10 @@ if __name__ == '__main__':
 
     test_w3_connected(w3_instance)
 
-    rbt_local = rb_tree.RedBlackTree()
     rbt_contract = test_deploy(w3_instance, actor)
+    test_empty(actor, rbt_contract)
+
+    rbt_local = rb_tree.RedBlackTree()
     test_trees_equal(w3_instance, actor, rbt_contract, rbt_local)
 
     print('PASS')
