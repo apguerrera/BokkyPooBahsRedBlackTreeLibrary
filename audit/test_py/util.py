@@ -1,4 +1,67 @@
 import solcx
+import audit.test_py.rb_tree as rb_tree
+
+
+# in-order traversal of contract red black tree
+def traverse_contract_tree(account, contract, node_value):
+    node = call_function(account, contract, 'getNode', node_value)
+    if node[2] != 0:
+        yield from traverse_contract_tree(account, contract, node[2])
+
+    yield node_value
+
+    if node[3] != 0:
+        yield from traverse_contract_tree(account, contract, node[3])
+
+
+# convert contract red black tree to list of [3, 2, 1, 0, True]-like nodes
+def contract_tree_to_list(account, contract):
+    root_value = call_function(account, contract, 'root')
+    if root_value != 0:
+        values = list(traverse_contract_tree(account, contract, root_value))
+        node_list = []
+        for value in values:
+            node = call_function(account, contract, 'getNode', value)
+            node_list.append(node)
+        return node_list
+    else:
+        return []
+
+
+# make [3, 2, 1, 0, True] like list from local red black tree
+def format_node(node):
+    if node is None:
+        return None
+    node_list = [node.value]
+
+    if node.parent is None or node.parent.value is None:
+        node_list.append(0)
+    else:
+        node_list.append(node.parent.value)
+
+    if node.left is None or node.left.value is None:
+        node_list.append(0)
+    else:
+        node_list.append(node.left.value)
+
+    if node.right is None or node.right.value is None:
+        node_list.append(0)
+    else:
+        node_list.append(node.right.value)
+
+    node_list.append(node.color == rb_tree.RED)
+    return node_list
+
+
+# local red black tree to list of formatted nodes
+def tree_to_list(tree):
+    values = list(tree)
+    nodes = []
+    for value in values:
+        node = tree.find_node(value)
+        nodes.append(format_node(node))
+
+    return nodes
 
 
 # decrypt keystore file and return account
