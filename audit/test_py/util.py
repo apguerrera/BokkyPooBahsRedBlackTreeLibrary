@@ -1,5 +1,5 @@
 import solcx
-import audit.test_py.rb_tree as rb_tree
+import rb_tree
 
 
 # in-order traversal of contract red black tree

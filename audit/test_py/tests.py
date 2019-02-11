@@ -1,6 +1,7 @@
-import audit.test_py.rb_tree as rb_tree
-from audit.test_py.util import *
 from web3 import Web3
+from util import deploy_contract, wait_contract_address, get_contract, call_function, transact_function, \
+    tree_to_list, contract_tree_to_list, account_from_key
+import rb_tree
 import random
 
 
@@ -9,7 +10,7 @@ def test_w3_connected(w3):
 
     assert w3.isConnected(), 'not connected to ethereum node'
 
-    print('SUCCESS: ipc path: {}'.format(w3.providers[0].ipc_path))
+    print('ipc path: {}: SUCCESS'.format(w3.providers[0].ipc_path))
 
 
 def test_deploy(w3, account, path, name):
@@ -20,12 +21,12 @@ def test_deploy(w3, account, path, name):
     contract = get_contract(w3, contract_address, contract_interface['abi'])
     assert w3.isAddress(contract_address), 'failed to deploy contract'
 
-    print('SUCCESS: contract deployed at address: {}'.format(contract_address))
+    print('contract deployed at address: {}: SUCCESS'.format(contract_address))
     return contract
 
 
 def test_empty(account, contract):
-    print('check that contract is initialized correctly: ', end='')
+    print('RBT is empty: ', end='')
 
     root = call_function(account, contract, 'root')
     expected = 0
@@ -75,7 +76,7 @@ def test_empty(account, contract):
 
 
 def test_trees_equal(w3, account, contract, rbt):
-    print('check that contract RBT has correct structure and values: ', end='')
+    print('RBT has correct structure and values: ', end='')
 
     local_list = tree_to_list(rbt)
     contract_list = contract_tree_to_list(account, contract)
@@ -91,7 +92,7 @@ def test_trees_equal(w3, account, contract, rbt):
 
 
 def test_insert(w3, account, contract, items):
-    print('insert elements: {}: '.format(items), end='')
+    print('insert elements to RBT: {}: '.format(items), end='')
 
     tx_hashes = []
     for item in items:
@@ -111,14 +112,14 @@ def test_insert(w3, account, contract, items):
         assert tx_receipt['status'] == 1, 'failed to insert element {} to RBT'.format(items[i])
 
     if len(items) > 1:
-        print('SUCCESS: minimum gas: {}, maximum gas: {}, total gas: {}, average gas: {}'
+        print('minimum gas: {}, maximum gas: {}, total gas: {}, average gas: {}: SUCCESS'
               .format(min_gas_used, max_gas_used, total_gas_used, int(total_gas_used / len(tx_hashes))))
     else:
-        print('SUCCESS: gas used: {}'.format(total_gas_used))
+        print('gas used: {}: SUCCESS'.format(total_gas_used))
 
 
 def test_remove(w3, account, contract, items):
-    print('remove elements: {}: '.format(items), end='')
+    print('remove elements from RBT: {}: '.format(items), end='')
 
     tx_hashes = []
     for item in items:
@@ -138,14 +139,14 @@ def test_remove(w3, account, contract, items):
         assert tx_receipt['status'] == 1, 'failed to remove element {} to RBT'.format(items[i])
 
     if len(items) > 1:
-        print('SUCCESS: minimum gas: {}, maximum gas: {}, total gas: {}, average gas: {}'
+        print('minimum gas: {}, maximum gas: {}, total gas: {}, average gas: {}: SUCCESS'
               .format(min_gas_used, max_gas_used, total_gas_used, int(total_gas_used / len(tx_hashes))))
     else:
-        print('SUCCESS: gas used: {}'.format(total_gas_used))
+        print('gas used: {}: SUCCESS'.format(total_gas_used))
 
 
 def test_duplicate(w3, account, contract, items):
-    print('check that contract rejects duplicate values: {}: '.format(items), end='')
+    print('RBT rejects duplicate values: {}: '.format(items), end='')
 
     tx_hashes = []
     for item in items:
@@ -153,11 +154,23 @@ def test_duplicate(w3, account, contract, items):
         tx_hash = transact_function(w3, account, contract, 'insert', item, add_nonce)
         tx_hashes.append(tx_hash)
 
+    min_gas_used = 100000000000
+    max_gas_used = -10000000000
+    total_gas_used = 0
     for i in range(len(tx_hashes)):
         tx_receipt = w3.eth.waitForTransactionReceipt(tx_hashes[i])
+        gas_used = tx_receipt['gasUsed']
+        min_gas_used = min(gas_used, min_gas_used)
+        max_gas_used = max(gas_used, max_gas_used)
+        total_gas_used += gas_used
+
         assert tx_receipt['status'] == 0, 'succeeded to insert duplicate element {} to RBT'.format(items[i])
 
-    print('SUCCESS')
+    if len(items) > 1:
+        print('minimum gas: {}, maximum gas: {}, total gas: {}, average gas: {}: SUCCESS'
+              .format(min_gas_used, max_gas_used, total_gas_used, int(total_gas_used / len(tx_hashes))))
+    else:
+        print('gas used: {}: SUCCESS'.format(total_gas_used))
 
 
 def test(w3, contract_path, contract_name, account, insert_items, remove_items):
@@ -186,6 +199,8 @@ def test(w3, contract_path, contract_name, account, insert_items, remove_items):
 
         test_trees_equal(w3, account, contract, rbt)
 
+    test_empty(account, contract)
+
     # insert all items, then check that contract has correct structure and elements
     test_insert(w3, account, contract, insert_items)
     for item in insert_items:
@@ -201,6 +216,8 @@ def test(w3, contract_path, contract_name, account, insert_items, remove_items):
     for item in insert_items:
         rbt.remove(item)
     test_trees_equal(w3, account, contract, rbt)
+
+    test_empty(account, contract)
 
     print('PASS')
 
@@ -231,5 +248,5 @@ if __name__ == '__main__':
     items_to_remove = [4, 14, 25, 32, 2, 30, 16, 31, 6, 26, 18, 22, 28, 23, 12, 15, 19, 27, 7, 13, 29, 11, 3, 5, 17, 1,
                        24, 20, 9, 8, 21, 10]
 
-    test(web3, rbt_contract_path, rbt_contract_name, actor, items_to_insert, items_to_remove)
+    # test(web3, rbt_contract_path, rbt_contract_name, actor, items_to_insert, items_to_remove)
     test_randomized(web3, rbt_contract_path, rbt_contract_name, actor, 5)
