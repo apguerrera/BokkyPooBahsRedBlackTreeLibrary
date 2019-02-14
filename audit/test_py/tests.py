@@ -1,6 +1,6 @@
 from web3 import Web3
 from util import deploy_contract, wait_contract_address, get_contract, call_function, transact_function, \
-    tree_to_list, contract_tree_to_list, account_from_key
+    tree_to_list, contract_tree_to_list, account_from_key, print_contract_tree
 import rb_tree
 import random
 
@@ -191,6 +191,7 @@ def test(w3, contract_path, contract_name, account, insert_items, remove_items):
         # try to insert duplicate value, check that nothing is changed
         test_duplicate(w3, account, contract, [item])
         test_trees_equal(w3, account, contract, rbt)
+        print_contract_tree(account, contract)
 
     # remove items one by one, after each removal check that contract has correct structure and elements
     for item in remove_items:
@@ -198,6 +199,7 @@ def test(w3, contract_path, contract_name, account, insert_items, remove_items):
         rbt.remove(item)
 
         test_trees_equal(w3, account, contract, rbt)
+        print_contract_tree(account, contract)
 
     test_empty(account, contract)
 
@@ -210,10 +212,11 @@ def test(w3, contract_path, contract_name, account, insert_items, remove_items):
     # try to insert duplicate values, check that nothing is changed
     test_duplicate(w3, account, contract, insert_items)
     test_trees_equal(w3, account, contract, rbt)
+    print_contract_tree(account, contract)
 
     # remove all items, then check that contract has correct structure and elements
-    test_remove(w3, account, contract, insert_items)
-    for item in insert_items:
+    test_remove(w3, account, contract, remove_items)
+    for item in remove_items:
         rbt.remove(item)
     test_trees_equal(w3, account, contract, rbt)
 
@@ -243,10 +246,10 @@ if __name__ == '__main__':
     web3 = Web3(Web3.IPCProvider(geth_ipc_path))
     actor = account_from_key(web3, keystore_file, '')
 
-    items_to_insert = [18, 28, 17, 32, 7, 5, 21, 14, 10, 3, 23, 16, 24, 4, 29, 8, 26, 12, 2, 22, 11, 1, 31, 19, 30, 9,
-                       13, 15, 6, 20, 25, 27]
-    items_to_remove = [4, 14, 25, 32, 2, 30, 16, 31, 6, 26, 18, 22, 28, 23, 12, 15, 19, 27, 7, 13, 29, 11, 3, 5, 17, 1,
-                       24, 20, 9, 8, 21, 10]
-
+    # items_to_insert = [18, 28, 17, 32, 7, 5, 21, 14, 10, 3, 23, 16, 24, 4, 29, 8, 26, 12, 2, 22, 11, 1, 31, 19, 30, 9,
+    #                    13, 15, 6, 20, 25, 27]
+    # items_to_remove = [4, 14, 25, 32, 2, 30, 16, 31, 6, 26, 18, 22, 28, 23, 12, 15, 19, 27, 7, 13, 29, 11, 3, 5, 17,
+    #                    1, 24, 20, 9, 8, 21, 10]
     # test(web3, rbt_contract_path, rbt_contract_name, actor, items_to_insert, items_to_remove)
-    test_randomized(web3, rbt_contract_path, rbt_contract_name, actor, 5)
+
+    test_randomized(web3, rbt_contract_path, rbt_contract_name, actor, 10)

@@ -1,5 +1,40 @@
 import solcx
 import rb_tree
+from binarytree import build
+
+
+# perform level-order traversal, the use binarytree module to print the tree
+def print_contract_tree(account, contract):
+    root_value = call_function(account, contract, 'root')
+    if root_value == 0:
+        return
+    root = call_function(account, contract, 'getNode', root_value)
+    queue = [root]
+    items = []
+    while queue:
+        current_item = queue[0]
+        if current_item is None:
+            items.append(None)
+            queue.append(None)
+            queue.append(None)
+        else:
+            items.append(current_item)
+            left = None
+            right = None
+            if current_item[2] != 0:
+                left = call_function(account, contract, 'getNode', current_item[2])
+            if current_item[3] != 0:
+                right = call_function(account, contract, 'getNode', current_item[3])
+            queue.append(left)
+            queue.append(right)
+        queue = queue[1:]
+        if all((x is None for x in queue)):
+            break
+
+    for i in range(len(items)):
+        if items[i] is not None:
+            items[i] = items[i][0]
+    print(build(items))
 
 
 # in-order traversal of contract red black tree
