@@ -251,79 +251,137 @@ library BokkyPooBahsRedBlackTreeLibrary {
             _uncle = SENTINEL;
         }
     }
-
+    // AG Ok
     function insert(Tree storage self, uint z) internal {
+        // AG Ok
         require(z != SENTINEL);
+        // AG Ok
         bool duplicateFound = false;
+        // AG Ok       
         uint y = SENTINEL;
+        // AG Ok
         uint x = self.root;
+        // AG Ok
         while (x != SENTINEL) {
+            // AG Ok
             y = x;
+            // AG Ok
             if (z < x) {
+                // AG Ok - Moves down the tree
                 x = self.nodes[x].left;
+            // AG Ok - Could make individual if z == x statement vs nested
             } else {
+                // AG Ok
                 if (z == x) {
+                    // AG Ok    
                     duplicateFound = true;
+                    // AG Ok
                     break;
                 }
+                // AG Ok - See not above else statement
                 x = self.nodes[x].right;
             }
         }
+        // AG Ok
         require(!duplicateFound);
+        // AG Ok -  New node
         self.nodes[z] = Node(y, SENTINEL, SENTINEL, true);
+        // AG Ok - Leaf is null, z is head of tree
         if (y == SENTINEL) {
+            // AG Ok
             self.root = z;
+        // AG Ok
         } else if (z < y) {
+            // AG Ok
             self.nodes[y].left = z;
+        // AG Ok
         } else {
+            // AG Ok
             self.nodes[y].right = z;
         }
+        // AG Ok
         insertFixup(self, z);
+        // AG Ok
         self.inserted++;
     }
+
+    // AG Ok
     function remove(Tree storage self, uint z) internal {
+        // AG Ok
         require(z != SENTINEL);
+        // AG Ok
         uint x;
+        // AG Ok
         uint y;
 
         // z can be root OR z is not root && parent cannot be the SENTINEL
+        // AG Ok
         require(z == self.root || (z != self.root && self.nodes[z].parent != SENTINEL));
-
+        // AG Ok
         if (self.nodes[z].left == SENTINEL || self.nodes[z].right == SENTINEL) {
+            // AG Ok
             y = z;
+        // AG Ok - If not leaf of RB tree, try get the closest value above z
         } else {
+            // AG Ok
             y = self.nodes[z].right;
+            // AG Ok
             while (self.nodes[y].left != SENTINEL) {
+                // AG Ok
                 y = self.nodes[y].left;
             }
         }
+        // AG Ok - maybe add if(y = z) as that is really what you're trying to do, not a left lookup, or add it in the if statement above
         if (self.nodes[y].left != SENTINEL) {
+            // AG Ok
             x = self.nodes[y].left;
+        // AG Ok
         } else {
+            // AG Ok
             x = self.nodes[y].right;
         }
+        // AG Ok - Check if parent can be z?
         uint yParent = self.nodes[y].parent;
+        // AG Ok - Check if x is not sentinel before assigning it
         self.nodes[x].parent = yParent;
+        // AG Ok
         if (yParent != SENTINEL) {
+            // AG Ok
             if (y == self.nodes[yParent].left) {
+                // AG Ok
                 self.nodes[yParent].left = x;
+            // AG Ok
             } else {
+                // AG Ok
                 self.nodes[yParent].right = x;
             }
+        // AG Ok
         } else {
+            // AG Ok
             self.root = x;
         }
+        // AG Ok
         bool doFixup = !self.nodes[y].red;
+        // AG Ok
         if (y != z) {
+            // AG Ok - Moving next highest number to replace z
             replaceParent(self, y, z);
+            // AG Ok
             self.nodes[y].left = self.nodes[z].left;
+            // AG Ok
             self.nodes[self.nodes[y].left].parent = y;
+            // AG Ok
             self.nodes[y].right = self.nodes[z].right;
+            // AG Ok - Reattach parent to next highest value
             self.nodes[self.nodes[y].right].parent = y;
+            // AG Ok
             self.nodes[y].red = self.nodes[z].red;
+            // AG Ok - Swapping variables
             (y, z) = (z, y);
         }
+        // AG Ok
         if (doFixup) {
+            // AG Ok
             removeFixup(self, x);
         }
         // Below `delete self.nodes[SENTINEL]` may not be necessary
@@ -353,7 +411,7 @@ library BokkyPooBahsRedBlackTreeLibrary {
             // AG Ok
             key = self.nodes[key].right;
         }
-        // AG Ok 
+        // AG Ok
         return key;
     }
 

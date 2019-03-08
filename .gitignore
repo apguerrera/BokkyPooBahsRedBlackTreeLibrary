@@ -10,12 +10,10 @@ rbtTestHash/testchain/history
 audit/test_py/testchain/geth
 audit/test_py/testchain/geth.ipc
 audit/test_py/testchain/history
-audit/test_js/testchain/geth
-audit/test_js/testchain/geth.ipc
-audit/test_js/testchain/history
 audit/test_py/.ipynb_checkpoints
 test/testchain/geth
 test/testchain/geth.ipc
 test/testchain/history
 private
 *.pyc
+*__pycache__
