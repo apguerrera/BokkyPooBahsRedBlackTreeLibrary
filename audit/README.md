@@ -6,11 +6,10 @@ Status: Work in progress
 
 [BokkyPooBah](https://www.bokconsulting.com.au/) has developed a smart contract library and wrapper contract for gas efficient search tree on Ethereum.
 
-[Deepyr Pty Ltd](https://www.deepyr.com) was commissioned to perform an audit on these Ethereum smart contracts.
+[Deepyr Pty Ltd](https://www.deepyr.com) was commissioned to perform an code review on these Ethereum smart contracts.
 
 This audit has been conducted on the source code from [apguerrera/](https://github.com/apguerrera/) in commits [75cc80c](https://github.com/apguerrera)
 
-**TODO** Check that no potential vulnerabilities have been identified in the smart contracts.
 
 <br />
 
@@ -67,16 +66,13 @@ highlight any areas of weaknesses.
 
 ## Testing
 
-Details of the testing environment can be found in [test](test).
+Details of the testing environment can be found in [test_py](test_py).
 
-[../chain/index.js](../chain/index.js) and [../chain/lib/deployerProd.js](../chain/lib/deployerProd.js) were used as a guide for the security model used with this set of contracts.
+The following contracts were tested using the script [test_py/01_test1.sh](test_py/01_test1.sh) with the summary results saved
+in [test_py/test1results.txt](test_py/test1results.txt) and the detailed output saved in [test_py/test1output.txt](test_py/test1output.txt):
 
-The following functions were tested using the script [test/01_test1.sh](test/01_test1.sh) with the summary results saved
-in [test/test1results.txt](test/test1results.txt) and the detailed output saved in [test/test1output.txt](test/test1output.txt):
-
-* [x] Group #1 deployment
-  * [] `Contract()`
-
+* [x] Library
+  * [x] `BokkyPooBahsRedBlackTreeLibrary`
 
 <br />
 
@@ -84,12 +80,11 @@ in [test/test1results.txt](test/test1results.txt) and the detailed output saved 
 
 ## Code Review
 
-* [ ] [code-review/Contract.md](code-review/Contract.md)
-  * [ ] contract Contract
+* [x] [code-review/BokkyPooBahsRedBlackTreeLibrary.md](code-review/BokkyPooBahsRedBlackTreeLibrary.md)
+  * [x] contract BokkyPooBahsRedBlackTreeLibrary.sol
 
 
 <br />
-
 
 
 ### Outside Scope
@@ -100,4 +95,4 @@ in [test/test1results.txt](test/test1results.txt) and the detailed output saved 
 
 <br />
 
-(c) Adrian Guerrera / Deepyr Pty Ltd for BokkyPooBah / Bok Consulting Pty Ltd - Nov 20 2018. The MIT Licence.
+(c) Adrian Guerrera / Deepyr Pty Ltd for BokkyPooBah / Bok Consulting Pty Ltd - Jan 20 2019. The MIT Licence.
