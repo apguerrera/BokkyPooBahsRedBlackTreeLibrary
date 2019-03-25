@@ -110,7 +110,7 @@ def account_from_key(w3, key_path, passphrase):
 
 # compile contract using solcx and return contract interface
 def compile_contract(path, name):
-    solcx.set_solc_version('v0.4.25')
+    #solcx.set_solc_version('v0.4.25')
     compiled_contacts = solcx.compile_files([path])
     contract_interface = compiled_contacts['{}:{}'.format(path, name)]
     return contract_interface

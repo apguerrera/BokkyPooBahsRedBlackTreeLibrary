@@ -1,42 +1,30 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.4;
 
 import "BokkyPooBahsRedBlackTreeLibrary.sol";
 
 // ----------------------------------------------------------------------------
-// BokkyPooBah's Red-Black Tree Library v0.90 - Contract for testing
+// BokkyPooBah's Red-Black Tree Library v1.0-pre-release-a - Contract for testing
 //
-// A Solidity Red-Black Tree library to store and access a sorted list of
-// unsigned integer data in a binary search tree.
-// The Red-Black algorithm rebalances the binary search tree, resulting in
-// O(log n) insert, remove and search time (and ~gas)
+// A Solidity Red-Black Tree binary search library to store and access a sorted
+// list of unsigned integer data. The Red-Black algorithm rebalances the binary
+// search tree, resulting in O(log n) insert, remove and search time (and ~gas)
 //
 // https://github.com/bokkypoobah/BokkyPooBahsRedBlackTreeLibrary
 //
 //
-// Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2018. The MIT Licence.
+// Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2019. The MIT Licence.
 // ----------------------------------------------------------------------------
-
 contract TestBokkyPooBahsRedBlackTreeRaw {
     using BokkyPooBahsRedBlackTreeLibrary for BokkyPooBahsRedBlackTreeLibrary.Tree;
 
     BokkyPooBahsRedBlackTreeLibrary.Tree tree;
 
-    event Log(string where, string action, uint key, uint parent, uint left, uint right, bool red);
+    event Log(string where, uint key, uint value);
 
     constructor() public {
-        tree.init();
     }
     function root() public view returns (uint _key) {
         _key = tree.root;
-    }
-    function inserted() public view returns (uint _inserted) {
-        _inserted = tree.inserted;
-    }
-    function removed() public view returns (uint _removed) {
-        _removed = tree.removed;
-    }
-    function count() public view returns (uint _count) {
-        _count = tree.count();
     }
     function first() public view returns (uint _key) {
         _key = tree.first();
@@ -56,23 +44,13 @@ contract TestBokkyPooBahsRedBlackTreeRaw {
     function getNode(uint _key) public view returns (uint key, uint parent, uint left, uint right, bool red) {
         (key, parent, left, right, red) = tree.getNode(_key);
     }
-    function parent(uint key) public view returns (uint _parent) {
-        _parent = tree.parent(key);
-    }
-    function grandparent(uint key) public view returns (uint _grandparent) {
-        _grandparent = tree.grandparent(key);
-    }
-    function sibling(uint key) public view returns (uint _parent) {
-        _parent = tree.sibling(key);
-    }
-    function uncle(uint key) public view returns (uint _parent) {
-        _parent = tree.uncle(key);
-    }
 
     function insert(uint _key) public {
         tree.insert(_key);
+        // emit Log("insert", _key, 0);
     }
     function remove(uint _key) public {
         tree.remove(_key);
+        // emit Log("remove", _key, 0);
     }
 }

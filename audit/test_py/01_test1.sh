@@ -1,4 +1,7 @@
+#!/bin/sh
 
+pip3 install web3
+pip3 install binarytree
 
-# Run jupyter notebook
-jupyter notebook
+# Run python tests
+python3 tests.py
